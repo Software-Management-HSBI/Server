@@ -4,21 +4,16 @@ import socketio
 sio = socketio.Server()
 app = socketio.WSGIApp(sio)
 
-player1 = None
 players = []
 
 @sio.event
 def connect(sid, environ, auth):
     players.append(sid)
-    if player1 is None:
-        player1 = sid
     print('connect ', sid)
     
 @sio.event
 def disconnect(sid):
     players.remove(sid)
-    if player1 == sid:
-        player1 = players[0] if players else None
     print('disconnect ', sid)
 
 @sio.on('update')
@@ -34,7 +29,7 @@ def start(sid, data):
 
 @sio.on('segment')
 def segment(sid, data):
-    if player1 == sid:
+    if players[0] == sid:
         segments = data['segments']
         segmentLength = data['segmentLength']
         maxSpeed = data['maxSpeed']
@@ -43,4 +38,4 @@ def segment(sid, data):
 
 if __name__ == '__main__':
     import eventlet
-    eventlet.wsgi.server(eventlet.listen(('localhost', 3000)), app)
+    eventlet.wsgi.server(eventlet.listen(('ec2-18-159-61-52.eu-central-1.compute.amazonaws.com', 3000)), app)
