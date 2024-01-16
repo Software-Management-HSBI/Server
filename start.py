@@ -18,9 +18,7 @@ def disconnect(sid):
 
 @sio.on('update')
 def update(sid, data):
-    for session_id, socket in sio.sockets.items():
-        if session_id != sid:
-            socket.emit('update', data)
+    sio.emit('update', data, skip_sid=sid)
 
 @sio.on('start')
 def start(sid, data):
