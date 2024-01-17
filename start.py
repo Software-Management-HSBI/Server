@@ -20,11 +20,6 @@ def disconnect(sid):
 def update(sid, data):
     sio.emit('update', data, skip_sid=sid)
 
-@sio.on('start')
-def start(sid, data):
-    road = SC.get_random_road()
-    sio.emit('road', road)
-
 @sio.on('segment')
 def segment(sid, data):
     if players[0] == sid:

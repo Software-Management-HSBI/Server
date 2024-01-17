@@ -30,36 +30,6 @@ def add_sprite(segments, n, sprite, offset):
     segments[n]["sprites"].append({"source": sprite, "offset": offset})
 
 @staticmethod
-def get_random_road():
-    i = random.randint(0, 1)
-    if i == 0:
-        return [
-                [100, 0, 60],
-                [50],
-                [100, 0, -60],
-                [90, 4],
-                [50],
-                [90, -4],
-                [75, 3, 40],
-                [25],
-                [100, -3, -40]
-                ]
-    elif i == 1:
-        return [
-                [100, 0, 20],
-                [50],
-                [100, 0, -20],
-                [90, 2],
-                [50],
-                [90, -2],
-                [75, 6, 80],
-                [25],
-                [100, -6, -80]
-                ]
-    
-    
-
-@staticmethod
 def get_car():
     i = random.randint(0, 3)
     if i == 0:
