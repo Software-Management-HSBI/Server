@@ -1,24 +1,72 @@
+import time
 import spriteCreation as SC
 import socketio
+from engineio.payload import Payload
+
+Payload.max_decode_packets = 500
 
 sio = socketio.Server()
 app = socketio.WSGIApp(sio)
 
-players = []
+countdown = 0
+players = {}
+# Beispiel:
+# 1234 : {'player': 1, 'ready': False}
 
 @sio.event
 def connect(sid, environ, auth):
-    players.append(sid)
+    players[sid] = {'player': 0, 'ready': False, 'finish': False}
     print('connect ', sid)
     
 @sio.event
 def disconnect(sid):
-    players.remove(sid)
+    sio.emit('unlock', {'player': players[sid]['player']})
+    players.pop(sid)
     print('disconnect ', sid)
 
 @sio.on('update')
 def update(sid, data):
     sio.emit('update', data, skip_sid=sid)
+
+@sio.on('register')
+def register(sid, data):
+    contains = False
+    for content in players.values():
+        if content['player'] == data['player']:
+            contains = True
+            break
+    if not contains:
+        players[sid]['player'] = data['player']
+        players[sid]['ready'] = False
+        sio.emit('accept', {"player": players[sid]['player']}, to = sid)
+        sio.emit('lock', {"player": players[sid]['player']}, skip_sid = sid) 
+
+@sio.on('playerReady')
+def playerReady(sid, data):
+    players[sid]['ready'] = True
+    sio.emit('playerReady', {"player": players[sid]['player']})
+
+    allReady = True
+    for content in players.values():
+        if not content['ready']:
+            allReady = False
+            return
+    
+    if allReady:
+        startCountdown()
+
+def startCountdown():
+    if(countdown == 0):
+        countdown = 3.0
+    while(countdown > 0):
+        sio.emit('countdown', countdown)
+        countdown -= 0.1
+        time.sleep(0.1)
+
+@sio.on('finish')
+def finish(sid, data):
+    players[sid]['finish'] = True
+    sio.emit('finish', {"player": players[sid]['player']})
 
 @sio.on('segment')
 def segment(sid, data):
