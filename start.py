@@ -57,7 +57,7 @@ def playerReady(sid, data):
 def startCountdown():
     countdown = 3
     while(countdown > 0):
-        sio.emit('countdown', countdown)
+        sio.emit('countdown', {'timer': countdown})
         countdown -= 0.1
         time.sleep(0.1)
 
