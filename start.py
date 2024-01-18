@@ -8,7 +8,6 @@ Payload.max_decode_packets = 500
 sio = socketio.Server()
 app = socketio.WSGIApp(sio)
 
-countdown = 0
 players = {}
 # Beispiel:
 # 1234 : {'player': 1, 'ready': False}
@@ -56,8 +55,7 @@ def playerReady(sid, data):
         startCountdown()
 
 def startCountdown():
-    if(countdown == 0):
-        countdown = 3.0
+    countdown = 3
     while(countdown > 0):
         sio.emit('countdown', countdown)
         countdown -= 0.1
