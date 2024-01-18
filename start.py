@@ -1,22 +1,21 @@
 import time
 import spriteCreation as SC
 import socketio
+from engineio.payload import Payload
+
+Payload.max_decode_packets = 500
 
 sio = socketio.Server()
 app = socketio.WSGIApp(sio)
 
-
+countdown = 0
 players = {}
 # Beispiel:
 # 1234 : {'player': 1, 'ready': False}
 
-countdown
-
 @sio.event
 def connect(sid, environ, auth):
-    players[sid]['player']: 0
-    players[sid]['ready']: False
-    players[sid]['finsih']:False 
+    players[sid] = {'player': 0, 'ready': False, 'finish': False}
     print('connect ', sid)
     
 @sio.event
@@ -37,15 +36,14 @@ def register(sid, data):
             contains = True
             break
     if not contains:
-        players[sid]['player']: data['player']
-        players[sid]['ready']: False
-        # ohne daten senden nur accept
-        sio.emit('accept', to = sid)
-        sio.emit('lock', {"player": players[sid]['player']},skip_sid = sid) 
+        players[sid]['player'] = data['player']
+        players[sid]['ready'] = False
+        sio.emit('accept', {"player": players[sid]['player']}, to = sid)
+        sio.emit('lock', {"player": players[sid]['player']}, skip_sid = sid) 
 
 @sio.on('playerReady')
 def playerReady(sid, data):
-    players[sid]['ready']: True
+    players[sid]['ready'] = True
     sio.emit('playerReady', {"player": players[sid]['player']})
 
     allReady = True
@@ -67,10 +65,9 @@ def startCountdown():
 
 @sio.on('finish')
 def finish(sid, data):
-    players[sid]['finish']: True
+    players[sid]['finish'] = True
     sio.emit('finish', {"player": players[sid]['player']})
 
-# Weiß nicht wie ich das ändern muss, aber brauchen wir ja eh nicht
 @sio.on('segment')
 def segment(sid, data):
     if players[0] == sid:
@@ -79,8 +76,6 @@ def segment(sid, data):
         maxSpeed = data['maxSpeed']
         cars = SC.create_cars(segments, segmentLength, maxSpeed)
         sio.emit('cars', cars)
-
-
 
 if __name__ == '__main__':
     import eventlet
